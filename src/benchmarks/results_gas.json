@@ -1,0 +1,206 @@
+{
+    "results": [
+        {
+            "label": "Initial",
+            "gas": {
+                "transfer": "16319",
+                "mint": "18811",
+                "burn": "12558",
+                "discovery": "6655"
+            },
+            "summary": "54343",
+            "pr": "https://github.com/tact-lang/jetton/pull/77"
+        },
+        {
+            "label": "With Tact-lang changes (selector hack and basechain optimizations)",
+            "pr": "https://github.com/tact-lang/jetton/pull/83",
+            "gas": {
+                "transfer": "15511",
+                "mint": "18027",
+                "burn": "12390",
+                "discovery": "6557"
+            },
+            "summary": "52485"
+        },
+        {
+            "label": "With Report Balance",
+            "pr": "https://github.com/tact-lang/jetton/pull/84",
+            "gas": {
+                "transfer": "15511",
+                "mint": "18027",
+                "burn": "12408",
+                "discovery": "6557",
+                "reportBalance": "4537"
+            },
+            "summary": "57040"
+        },
+        {
+            "label": "Set selector-hack flag to default value",
+            "pr": "https://github.com/tact-lang/jetton/pull/86",
+            "gas": {
+                "transfer": "15651",
+                "mint": "18195",
+                "burn": "12576",
+                "discovery": "6655",
+                "reportBalance": "4607"
+            },
+            "summary": "57684"
+        },
+        {
+            "label": "With Ton Claim",
+            "pr": "https://github.com/tact-lang/jetton/pull/90",
+            "gas": {
+                "transfer": "15651",
+                "mint": "17799",
+                "burn": "12944",
+                "discovery": "6612",
+                "reportBalance": "4440",
+                "claimWallet": "4030"
+            },
+            "summary": "61476"
+        },
+        {
+            "label": "Tact bumped to 1.6.5",
+            "pr": "https://github.com/tact-lang/jetton/pull/109",
+            "gas": {
+                "transfer": "15615",
+                "mint": "18381",
+                "burn": "12880",
+                "discovery": "6023",
+                "reportBalance": "4308",
+                "claimWallet": "3984"
+            },
+            "summary": "61191"
+        },
+        {
+            "label": "new forward payload check",
+            "pr": "https://github.com/tact-lang/jetton/pull/106",
+            "gas": {
+                "transfer": "15677",
+                "mint": "18562",
+                "burn": "12880",
+                "discovery": "6023",
+                "reportBalance": "4308",
+                "claimWallet": "3984"
+            },
+            "summary": "61434"
+        },
+        {
+            "label": "reordered fields in JettonWallet",
+            "pr": "https://github.com/tact-lang/jetton/pull/122",
+            "gas": {
+                "transfer": "15667",
+                "mint": "18544",
+                "burn": "12862",
+                "discovery": "6015",
+                "reportBalance": "4308",
+                "claimWallet": "3984"
+            },
+            "summary": "61380"
+        },
+        {
+            "label": "Transfer bench now takes transfer with fwdPayload into account",
+            "pr": "https://github.com/tact-lang/jetton/pull/124",
+            "gas": {
+                "transfer": "34202",
+                "mint": "18544",
+                "burn": "12862",
+                "discovery": "6015",
+                "reportBalance": "4308",
+                "claimWallet": "3984"
+            },
+            "summary": "79915"
+        },
+        {
+            "label": "Optimized checkEitherForwardPayload",
+            "pr": "https://github.com/tact-lang/jetton/pull/124",
+            "gas": {
+                "transfer": "33953",
+                "mint": "18520",
+                "burn": "12749",
+                "discovery": "6015",
+                "reportBalance": "4308",
+                "claimWallet": "3984"
+            },
+            "summary": "79529"
+        },
+        {
+            "label": "Tact bumped to 1.6.7",
+            "pr": "141",
+            "gas": {
+                "transfer": "33917",
+                "mint": "18502",
+                "burn": "12749",
+                "discovery": "6015",
+                "reportBalance": "4308",
+                "claimWallet": "3984"
+            },
+            "summary": "79475"
+        },
+        {
+            "label": "With larger mint opcode",
+            "pr": "https://github.com/tact-lang/jetton/pull/144",
+            "gas": {
+                "transfer": "33917",
+                "mint": "18517",
+                "burn": "12846",
+                "discovery": "6140",
+                "reportBalance": "4308",
+                "claimWallet": "3984"
+            },
+            "summary": "79712"
+        },
+        {
+            "label": "Added StateInit fwd fee check",
+            "pr": "https://github.com/tact-lang/jetton/pull/155",
+            "gas": {
+                "transfer": "34161",
+                "mint": "18639",
+                "burn": "12846",
+                "discovery": "6140",
+                "reportBalance": "4308",
+                "claimWallet": "3984"
+            },
+            "summary": "80078"
+        },
+        {
+            "label": "Without ton amount",
+            "pr": "https://github.com/tact-lang/jetton/pull/170",
+            "gas": {
+                "transfer": "34161",
+                "mint": "18655",
+                "burn": "12846",
+                "discovery": "6140",
+                "reportBalance": "4308",
+                "claimWallet": "3984"
+            },
+            "summary": "80094"
+        },
+        {
+            "label": "With reordered receivers",
+            "pr": "https://github.com/tact-lang/jetton/pull/172",
+            "gas": {
+                "transfer": "34161",
+                "mint": "18850",
+                "burn": "12846",
+                "discovery": "5945",
+                "reportBalance": "4308",
+                "claimWallet": "3984"
+            },
+            "summary": "80094"
+        },
+        {
+            "label": "newBench",
+            "pr": "1",
+            "gas": {
+                "transfer": "34161",
+                "mint": "18850",
+                "burn": "12846",
+                "discovery": "5945",
+                "reportBalance": "4308",
+                "claimWallet": "3984"
+            },
+            "summary": "80094"
+        }
+    ]
+}
