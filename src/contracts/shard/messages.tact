@@ -1,6 +1,10 @@
 //  SPDX-License-Identifier: MIT
 //  Copyright © 2025 TON Studio
 
+struct Insurance {
+    emi: Int as uint12;
+    startStop: Int as uint42;// TODO: enough for time
+}
 // Optimized action messages with op codes
 message(0x7362d09c) JettonNotification {
     queryId: Int as uint64;
@@ -101,7 +105,7 @@ message(3) FollowInternal {
     forwardPayload: Slice as remaining;
 }
 
-message(15) Unfollow {
+message(0x15) Unfollow {
     target: Address;
     amount: Int as uint16;
 }
@@ -158,20 +162,20 @@ message(10) ResolutionInternal {
     forwardPayload: Slice as remaining;
 }
 
-message(11) Report {
+message(0x11) Report {
     target: Address;
     reason: Bool; //true for closure, false for fraud/duplicateAccount
 }
 
-message(12) Dispute {
+message(0x12) Dispute {
     target: Address;
 }
 
-message(13) ProcessComplaint {
+message(0x13) ProcessComplaint {
     target: Address;
 }
 
-message(14) AdminAction {
+message(0x14) AdminAction {
     action: Int as uint8;
     value: Int as coins;
 }
@@ -265,10 +269,10 @@ message(0x178d4519) JettonTransferInternal {
 
 
 
-message(25) Mintable {
+message(0x25) Mintable {
     mintable: Bool;
 }
-message(31) UnfriendInternal {
+message(0x31) UnfriendInternal {
     queryId: Int as uint64;
     amount: Int as coins;
     sender: Address;
@@ -276,7 +280,7 @@ message(31) UnfriendInternal {
     forwardTonAmount: Int as coins;
     forwardPayload: Slice as remaining;
 }
-message(32) ReInviteInternal {
+message(0x32) ReInviteInternal {
     queryId: Int as uint64;
     amount: Int as coins;
     sender: Address;
@@ -284,7 +288,7 @@ message(32) ReInviteInternal {
     forwardTonAmount: Int as coins;
     forwardPayload: Slice as remaining;
 }
-message(34) UnInviteInternal {
+message(0x34) UnInviteInternal {
     queryId: Int as uint64;
     amount: Int as coins;
     sender: Address;
@@ -292,14 +296,14 @@ message(34) UnInviteInternal {
     forwardTonAmount: Int as coins;
     forwardPayload: Slice as remaining;
 }
-message(33) U {
+message(0x33) U {
     op: Int as uint6;
     amount: Int? as coins;
     sender: Address?;
     receiver: Address?;
     forwardPayload: Slice as remaining;
 }
-message(35) AccCloseBurnInternal {
+message(0x35) AccCloseBurnInternal {
     queryId: Int as uint64;
     amount: Int as coins;
     sender: Address;
@@ -308,19 +312,19 @@ message(35) AccCloseBurnInternal {
     forwardPayload: Slice as remaining;
 }
 
-message(36) EnquireInvitor {
+message(0x36) EnquireInvitor {
     sender: Address;
 }
-message(37) TakeInvitor {
+message(0x37) TakeInvitor {
     sender: Address;
     invitor: Address;
 }
 
-message(38) RequestUpgradeCode {
+message(0x38) RequestUpgradeCode {
     version: Int as uint10;
 }
 
-message(39) UpgradeCode {
+message(0x39) UpgradeCode {
     sender: Address;
     /// New code of the contract.
     /// Defaults to `null`, which keeps the previous code.
@@ -336,16 +340,21 @@ message(39) UpgradeCode {
     //timeout: Int = 0;
 }
 
-message(40) AccountGenerated {
+message(0x40) AccountGenerated {
     deployer: Address;
+    newAccount: Address;
 }
 
-message(41) ApplyGrant {
+message(0x41) ApplyGrant {
     sender: Address;
     amount: Int as coins;
 }
-message(42) VoteProposal {
+message(0x42) VoteProposal {
     sender: Address;
     proposer: Address;
     turnover: Int as coins;
+}
+message(0x41) CitizenAdded {
+    sender: Address;
+    newAccount: Address;
 }

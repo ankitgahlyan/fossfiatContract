@@ -203,6 +203,7 @@ contract JettonMinterSharded {
         // FIXME: checks
         self.population += 1;
         // we allow bounce here and don't handle it, if claim fails we just accept the TONs back
+        // FIXME: emit event or tell connections in wallet's init
         cashback(msg.deployer);// empty receiver significance?
     }
     receive(msg: ApplyGrant) {

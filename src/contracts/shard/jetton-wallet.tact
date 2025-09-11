@@ -8,7 +8,7 @@ import "./send";
 import "../utils";
 
 contract JettonWalletSharded {
-    // TODO: nest related stores
+    // TODO: nest related stores like insurance
     //STOP incoming tokens txn after transferredTo nominee
     //id token: signed payload by master
     // CONTRACT_PERSISTENT_STORE =============================================================================================
@@ -24,6 +24,7 @@ contract JettonWalletSharded {
     balance: Int as coins; // TODO: as uint20 - 1billion, rest is wealth taxed to treasury, coz every fortunate(birth, marriage) & unfortunate(accidents,health,death) are covered by treasury
     turnover: Int as uint32 = 0; // for txnFee/taxes, votes in public works
     debts: map<Address, Int as uint20>; //1,048,576, mbrp*maxConnections(friends+follower+following)
+    insurance: Insurance = Insurance { emi: 0, startStop: 0 };
 
     // Group: Connections & relationship maps
     invited: map<Address, Int as uint12>; // kyc friends, TODO: need counter/check?or default exitCode5isEnough
@@ -58,6 +59,7 @@ contract JettonWalletSharded {
     profession: Int as uint10 = 0; // not aplicable
 
     version: Int as uint10 = 0;
+
     //======================================================INIT
     init(owner: Address, minter: Address, balance: Int as coins) { //TODO: take coordinates
         self.owner = owner;
@@ -65,7 +67,7 @@ contract JettonWalletSharded {
         self.minter = minter;
         self.initTime = now();
         if (minter == sender()) { // or just do as everyone else or send enquire msg here
-            self.frozen = false;
+            self.frozen = false; // unfrozened by invitor0 for others
             self.invitor = owner;
             self.invitor0 = owner;
             // nominee?
@@ -74,17 +76,32 @@ contract JettonWalletSharded {
             self.balance = balance;
             //closureWait+=1000;
         } // FIXME what if just send invitor0 with invite msg, minter setting some state directly calling receivers
-        //notify external or to connections TODO: or on invite
         MessageParameters { //TODO: fees
             value: ton("0.1"),
-            mode: SendPayFwdFeesSeparately, //
+            mode: SendPayFwdFeesSeparately,
             to: self.minter,
-            body: AccountGenerated { deployer: sender() }.toCell(),
+            body: AccountGenerated { deployer: sender(), newAccount: owner }.toCell(),
+        }.send(); // sender() or sender's owner
+        // now notify external or to connections TODO: or on invite
+        MessageParameters {
+            value: ton("0.1"),
+            mode: SendPayFwdFeesSeparately,
+            to: sender(),
+            body: AccountGenerated { deployer: owner, newAccount: owner }.toCell(), // polymorphism
         }.send();
     }
 
     bounced(msg: bounced<AccountGenerated>) {
         //FIXME:
+    }
+
+    receive(msg: AccountGenerated) {
+        MessageParameters {
+            value: ton("0.1"), // need? to send
+            mode: SendPayFwdFeesSeparately,
+            to: self.invitor!!,
+            body: CitizenAdded { sender: self.owner, newAccount: msg.newAccount }.toCell(),
+        }.send();
     }
 
     //====================================================RECEIVERS
@@ -170,16 +187,15 @@ contract JettonWalletSharded {
             } else if (amount == ton("0.11")) { //clean requests to free contract storage
                 self.clearAllRequests();
                 return;
-                // } else if (amount == ton("0.13")) { //clean requests to free contract storage
-                //     self.unInvite(receiver, msg);
-                //     return;// centralised approach, use report tosViolate instead that'll freeze account instantly
+            } else if (amount == ton("0.13")) { //clean requests to free contract storage
+                self.unInvite(receiver, msg);
+                return; // centralised approach, use report tosViolate instead that'll freeze account instantly
             } else if (amount == ton("0.02")) { // reserved for invite
                 throwUnless(704, false); //invite(mbrp),burn, reward(2x mbrp)
             } else if (amount == ton("0.22")) {
                 self.updateInvitor0();
                 return;
             } else if (amount == ton("0.99")) {
-                //let _ = self.closeFriends.replace(receiver, true);// efficient? than set()
                 self.closeFriends.set(receiver, true);
                 self.closeFriendsCount += 1;
                 return;
@@ -195,6 +211,15 @@ contract JettonWalletSharded {
             } else if (amount == ton("0.501")) {
                 self.voteProposal(receiver);
                 return;
+            } else if (amount == ton("0.401")) {
+                self.insurance(amount);
+                return;
+            } else if (amount == ton("0.402")) {
+                self.insurance(amount);
+                return;
+            } else if (amount == ton("0.404")) {
+                self.insurance(amount);
+                return;
             }
             // else if (amount == ton("0.21")) { // getterOps
             //     let invitorNominee = self.get_invitor_nominee();//FIXME:
@@ -203,7 +228,7 @@ contract JettonWalletSharded {
             // } else if (sender == self.minter) { // Admin operations (minter only)
             //     self.adminAction(msg);
             // }
-        } else if (receiver == self.minter) { // for getting funding for public works
+        } else if (receiver == self.minter) { // for getting funding for public works, TODO: have open pubkey acc if minter doesn't work in frontend
             self.burn(muldivc(amount, 5, 100)); // stake 5% of demanded amount, returned if resolution passed or adjust/beSatisfied in funds provided
             MessageParameters {
                 value: 0,
@@ -302,7 +327,7 @@ contract JettonWalletSharded {
         self.invited.set(receiver, amount);
         self.lastMsgTo = receiver;
         self.connections += 1;
-        self.mintInternal(amount); // 2x
+        self.mintInternal(amount); // 2x, NOTE: now what do i care(minter is informed on init of acc)
         if (self.nominee == self.invitor) { // TODO: bounce and sender invitor as nominee
             self.nominee = receiver;
         }
@@ -357,7 +382,6 @@ contract JettonWalletSharded {
         // }
     }
 
-    /*
     // receive(msg: ReInviteInternal) {//for chain Unfreeze
     //      let queryId = msg.queryId;
     //     let forwardTonAmount = msg.forwardTonAmount;
@@ -375,52 +399,52 @@ contract JettonWalletSharded {
     //     self.burnForce(self.lastMsgTo!!, msg.amount);
     // }
 
-    // inline fun unInvite(receiver: Address, msg: JettonTransfer) { // TODO: just use reports for control n inviter for whereabouts
-    //     throwUnless(721, self.invited.del(receiver));
-    //     let amount = self.invited.get(receiver)!!;
-    //     //self.burnForce(receiver, amount);
-    //     self.burn(amount);
+    inline fun unInvite(receiver: Address, msg: JettonTransfer) { // TODO: just use reports for control n inviter for whereabouts
+        throwUnless(721, self.invited.del(receiver));
+        let amount = self.invited.get(receiver)!!; // TODO: move line up?
+        //self.burnForce(receiver, amount);
+        self.burn(amount);
 
-    //     MessageParameters { //TODO: fees paid by receivers
-    //         to: contractAddress(self.getInit(receiver)),
-    //         value: 0,
-    //         mode: SendRemainingValue | SendBounceIfActionFail,
-    //         body: UnInviteInternal {
-    //             queryId: msg.queryId,
-    //             amount: amount/2, // minted mbrp FIXME: internal?
-    //             sender: self.owner,
-    //             responseDestination: msg.responseDestination,
-    //             forwardTonAmount: msg.forwardTonAmount,
-    //             forwardPayload: msg.forwardPayload,
-    //         }.toCell(),
+        MessageParameters { //TODO: fees paid by receivers
+            to: contractAddress(self.getInit(receiver)),
+            value: 0,
+            mode: SendRemainingValue | SendBounceIfActionFail,
+            body: UnInviteInternal {
+                queryId: msg.queryId,
+                amount: amount / 2, // minted mbrp FIXME: internal?
+                sender: self.owner,
+                responseDestination: msg.responseDestination,
+                forwardTonAmount: msg.forwardTonAmount,
+                forwardPayload: msg.forwardPayload,
+            }.toCell(),
 
-    //     }.send();
+        }.send();
 
-    //     self.lastMsgTo = receiver;
-    //     self.connections -= 1;
-    // }
+        self.lastMsgTo = receiver;
+        self.connections -= 1;
+    }
 
-    // bounced(msg: bounced<UnInviteInternal>) {
-    //     let amount = 2 * msg.amount;
-    //     self.invited.set(self.lastMsgTo!!, amount);
-    //     //self.mintInternal(amount);
-    //     self.balance += amount;
-    //     self.connections += 1;
-    // }
+    bounced(msg: bounced<UnInviteInternal>) {
+        let amount = 2 * msg.amount;
+        self.invited.set(self.lastMsgTo!!, amount);
+        //self.mintInternal(amount);
+        self.balance += amount;
+        self.connections += 1;
+    }
 
-    // receive(msg: UnInviteInternal) {
-    //     let queryId = msg.queryId;
-    //     let forwardTonAmount = msg.forwardTonAmount;
-    //     let forwardPayload = msg.forwardPayload;
-    //     let responseDestination = msg.responseDestination;
-    //     self.checkInternal(msg.sender, msg.amount, 2, queryId, forwardTonAmount, forwardPayload, responseDestination);
+    receive(msg: UnInviteInternal) {
+        let queryId = msg.queryId;
+        let forwardTonAmount = msg.forwardTonAmount;
+        let forwardPayload = msg.forwardPayload;
+        let responseDestination = msg.responseDestination;
+        self.checkInternal(msg.sender, msg.amount, 2, queryId, forwardTonAmount, forwardPayload, responseDestination);
 
-    //     throwUnless(721, self.invitor == msg.sender); //redundant bothSide check for unBounced s
-    //     self.frozen = true;
-    //     //maybe no burns if coz someone will reinvite eventually, don't mint THEN
-    //     self.burnForce(msg.sender, msg.amount);
-    // }
-*/
+        throwUnless(721, self.invitor == msg.sender); //redundant bothSide check for unBounced s
+        self.frozen = true;
+        //maybe no burns if coz someone will reinvite eventually, don't mint THEN
+        self.burnForce(msg.sender, msg.amount);
+    }
+
     inline fun friendRequest(amount: Int, msg: JettonTransfer) {
         self.connection(msg.destination);
         //throwUnless(715, msg.amount <= mbrpAmount);//TODO:
@@ -930,19 +954,40 @@ contract JettonWalletSharded {
                 }.toCell(),
             }.send();
 
-            if (!self.reportReason) { //
+            if (!self.reportReason) { // or release funds in any case
+                // INSURANCE PAY
+                let payback: Int = 0;
+                if (self.insurance.emi > 0 && now() - self.initTime < ton("1261.440")) { // only < 40years old are paid
+                    let emi = self.insurance.emi;
+                    payback = muldivc(8, (self.initTime + self.insurance.startStop), 10) * emi;
+                }
+
                 MessageParameters { // bounce?
                     to: contractAddress(self.getInit(self.nominee!!)),
                     value: 0,
-                    mode: SendRemainingBalance,
+                    mode: SendPayFwdFeesSeparately,
                     body: JettonTransferInternal {
                         queryId: 0, //FIXME:
-                        amount: self.balance,
+                        amount: self.balance + payback,
                         version: self.version,
                         sender: self.owner,
-                        responseDestination: self.owner,
+                        responseDestination: msg.sender,
                         forwardTonAmount: 0,
                         forwardPayload: msg.forwardPayload,
+                    }.toCell(),
+                }.send();
+
+                // notify minter to update deficits
+                MessageParameters {
+                    to: self.minter,
+                    value: 0,
+                    mode: SendPayGasSeparately | SendIgnoreErrors,
+                    bounce: false,
+                    body: JettonBurnNotification {
+                        queryId: 0,
+                        amount: payback,
+                        sender: emptyAddress(),
+                        responseDestination: msg.sender, // or use this
                     }.toCell(),
                 }.send();
             }
@@ -1034,7 +1079,7 @@ contract JettonWalletSharded {
     }
 
     receive(msg: ClaimTON) {
-        throwUnless(701, !self.terminated);
+        // throwUnless(701, !self.terminated);
         throwUnless(700, sender() == self.owner);
         nativeReserve(minTonsForStorage, ReserveExact | ReserveBounceIfActionFail);
 
@@ -1095,7 +1140,7 @@ contract JettonWalletSharded {
     // }
 
     fun connection(receiver: Address) {
-        throwUnless(250, self.connections < 250);
+        throwUnless(250, self.connections < 250); // NOTE: const MAX_CONNECTIONS = 250
         throwUnless(
             719,
             self.invitor != receiver && !self.friends.exists(receiver) && !self.followings.exists(receiver) && !self.invited.exists(receiver) && !self.followers.exists(receiver),
@@ -1124,7 +1169,7 @@ contract JettonWalletSharded {
 
         if (forwardTonAmount > 0) {
             let fwdFee: Int = ctx.readForwardFee();
-            msgValue -= forwardTonAmount + fwdFee;
+            msgValue -= forwardTonAmount + fwdFee; // FIXME: this is not updated on init
             MessageParameters {
                 to: self.owner,
                 value: forwardTonAmount,
@@ -1235,14 +1280,20 @@ contract JettonWalletSharded {
     }
 
     fun burn(amount: Int) {
-        // if (amount > ton("100")) {// .1% fees for bounced burns, insurance
-        let fee = amount / ton("1000");
-        amount += fee;
-        // }// extra fees for payment channels?
+        if (amount > ton("100") || now() - self.recentTxnTime < 86400) { // .1% fees levied on affluents for bounced burns, insurance
+            let fee = amount / ton("1000");
+            amount += fee;
+        } // extra fees for payment channels?
+        if (self.insurance.emi > 0) {
+            let emi = self.insurance.emi;
+            let pay = muldivc(emi, now() - self.recentTxnTime, ton("2.628")); // time as ton
+            amount += pay;
+        }
         //throwUnless(709, self.balance >= amount + ton("1")); // keep minted 1 ton
         throwUnless(709, self.balance >= amount); // invite mints
         self.balance -= amount;
         self.turnover += amount; // TODO: need in burnForce too?
+        self.recentTxnTime = now();
         //TODO: notify treasury/minter
     }
 
@@ -1328,6 +1379,25 @@ contract JettonWalletSharded {
 
     inline fun changeNominee(nominee: Address) {
         self.nominee = nominee;
+    }
+
+    inline fun insurance(amount: Int) {
+        let existingEmi = self.insurance.emi;
+        let newEmi = 0;
+        if (amount == ton("0.401")) {
+            self.insurance.emi = ton("100");
+            newEmi = ton("100");
+        } else if (amount == ton("0.402")) {
+            self.insurance.emi = ton("500");
+            newEmi = ton("500");
+        } else if (amount == ton("0.404")) { // stop insurance
+            self.insurance.emi = 0;
+            return;
+        }
+
+        if (existingEmi > newEmi) { // decreasing amount resets time
+            self.insurance.startStop = now();
+        }
     }
     // inline fun adminAction(msg: JettonTransfer) {}
 
@@ -1444,6 +1514,7 @@ contract JettonWalletSharded {
 - walletContract as blockchain: p2p init verify
 -- turnover & tick-tock taxes
 
+FIXME: incoming gas checks are critical after separate receivers, specially for mint first txns like invite etc.
 
 /* FEATURES
 invitor gets 2x, mbrp for invitee, both 2x on friend, followed gets mbrp

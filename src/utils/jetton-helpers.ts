@@ -11,6 +11,7 @@ import chalk from "chalk"
 // import {GovernanceJettonMinter} from "../output/Governance_GovernanceJettonMinter"
 // import {JettonMinterFeatureRich} from "../output/FeatureRich_JettonMinterFeatureRich"
 import {JettonMinterSharded} from "../output/Shard_JettonMinterSharded"
+import { JettonWalletSharded } from "../output/Shard_JettonWalletSharded"
 
 const ONCHAIN_CONTENT_PREFIX = 0x00
 const SNAKE_PREFIX = 0x00
@@ -156,3 +157,9 @@ export async function buildJettonMinterFromEnv(
             return await JettonMinterSharded.fromInit(0n, deployerAddress, content, true)
     }
 }
+export async function buildJettonWalletFromEnv(
+    deployerAddress: Address,
+) {return await JettonWalletSharded.fromInit(deployerAddress, deployerAddress, 0n)}
+
+   
+    
