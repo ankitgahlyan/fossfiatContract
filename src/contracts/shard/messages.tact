@@ -3,7 +3,7 @@
 
 struct Insurance {
     emi: Int as coins;
-    startStop: Int as uint42;// TODO: enough for time
+    startStop: Int as uint42; // TODO: enough for time
 }
 // Optimized action messages with op codes
 message(0x7362d09c) JettonNotification {
@@ -79,7 +79,6 @@ message(0xca77fdc2) TakeWalletBalance {
 message(0x0393b1ce) ClaimTON {
     receiver: Address;
 }
-
 
 message(1) InviteInternal {
     queryId: Int as uint64;
@@ -189,14 +188,14 @@ message(0x14) AdminAction {
 // }
 
 struct FriendsAndFollowings {
-    friends: Cell?;//map<Address, Int as uint12>;
-    followings: Cell?;//map<Address, Int as uint12>;
+    friends: Cell?; //map<Address, Int as uint12>;
+    followings: Cell?; //map<Address, Int as uint12>;
     //TODO: remove maybe
-    followers: Cell?;//map<Address, Int as uint12>;
-    invited: Cell?;//map<Address, Int as uint12>;
-    pendingRequests: Cell?;//map<Address, Int as uint12>;
-    debts: Cell?;//map<Address, Int as uint20>;
-    reports: Cell?;//map<Address, Bool>;
+    followers: Cell?; //map<Address, Int as uint12>;
+    invited: Cell?; //map<Address, Int as uint12>;
+    pendingRequests: Cell?; //map<Address, Int as uint12>;
+    debts: Cell?; //map<Address, Int as uint20>;
+    reports: Cell?; //map<Address, Bool>;
 }
 
 struct OtherStateConsts {
@@ -266,9 +265,6 @@ message(0x178d4519) JettonTransferInternal {
 }
 // TODO: sent but received : maybe sent to app and not contract
 
-
-
-
 message(0x25) Mintable {
     mintable: Bool;
 }
@@ -333,13 +329,19 @@ message(0x39) UpgradeCode {
     /// New data of the contract.
     /// Defaults to `null`, which keeps the previous data.
     //data: Cell? = null;
-
     /// Delay in seconds before upgrade can be confirmed.
     /// Defaults to zero, which means the upgrade can be confirmed immediately.
     /// Unused in `Upgradable` trait.
     //timeout: Int = 0;
 }
 
+/// New data of the contract.
+/// Defaults to `null`, which keeps the previous data.
+//data: Cell? = null;
+/// Delay in seconds before upgrade can be confirmed.
+/// Defaults to zero, which means the upgrade can be confirmed immediately.
+/// Unused in `Upgradable` trait.
+//timeout: Int = 0;
 message(0x40) AccountGenerated {
     deployer: Address;
     newAccount: Address;

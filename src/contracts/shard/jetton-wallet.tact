@@ -54,9 +54,9 @@ contract JettonWalletSharded {
     recentTxnTime: Int as uint32 = 0; // for insurance emi calculate
 
     //stores coz of chain/design constraints
-    lastMsgTo: Address = address("EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c"); //U..JKZ,k..HTW,0..CkT, for reversing bounced msg// TODO: use stack or circular buffer for multimsg usecase
+    lastMsgTo: Address = address("EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c"); //U..JKZ,k..HTW,0..CkT, for reversing bounced msg// TODO: use stack or circular buffer for multiMsg useCase
 
-    profession: Int as uint10 = 0; // not aplicable
+    // profession: Int as uint10 = 0; // not applicable
 
     version: Int as uint10 = 0;
 
@@ -211,13 +211,7 @@ contract JettonWalletSharded {
             } else if (amount == ton("0.501")) {
                 self.voteProposal(receiver);
                 return;
-            } else if (amount == ton("0.401")) {
-                self.insurance(amount);
-                return;
-            } else if (amount == ton("0.402")) {
-                self.insurance(amount);
-                return;
-            } else if (amount == ton("0.404")) {
+            } else if (amount == ton("0.401") || amount == ton("0.402") || amount == ton("0.404")) {
                 self.insurance(amount);
                 return;
             }
@@ -275,12 +269,12 @@ contract JettonWalletSharded {
 
         //self.checkInternal(sender, amount, 0, queryId, forwardTonAmount, forwardPayload, responseDestination);
         if (amount < ton("1")) {
-            if (amount == ton("0.23") && sender == self.invitor0!!) {
+            if (sender == self.invitor0!! && amount == ton("0.23")) {
                 self.frozen = false;
-            } else if (amount == ton("0.24") && sender == self.invitor0!!) { // redundant? use reports instead
+            } else if (sender == self.invitor0!! && amount == ton("0.24")) { // redundant? use reports instead
                 self.frozen = true;
             } else if (amount == ton("0.02")) { // TODO: avoid sending from minter
-                self.burnForce(sender, mbrpAmount); // TODO: notity minter
+                self.burnForce(sender, mbrpAmount); // TODO: notify minter
             } else if (amount == ton("0.98")) {
                 //self.mintInternal(ton("101"));// recovery topup
                 self.balance += ton("100"); // no need to check
@@ -993,7 +987,7 @@ contract JettonWalletSharded {
                         forwardTonAmount: msg.forwardTonAmount,
                     }.toCell(),
                 }.send();
-                // set their invotor null
+                // set their invitor null
             }
             // burn 3x from invitor
             MessageParameters {
@@ -1363,7 +1357,7 @@ contract JettonWalletSharded {
                 }.toCell(),
             }.send();
         }
-        // reusing burnNotif for minting
+        // reusing burnNotify for minting
         if (mint != 0) { // || sender == self.minter in case minter mints > 0
             msgValue -= ctx.readForwardFee();
             let finalSender = sender;
@@ -1562,7 +1556,6 @@ contract JettonWalletSharded {
 // INSUFFICIENT_GAS_FOR_MINT = 731;
 // NEED_WALLET_UPGRADE = 732;
 // INACTIVE_ACCOUNT = 733;
-
 // CONTRACT_CONSTS
 // MAX_CONNECTIONS = 250; //coz of msg sending constraints during accClosing
 //const PAYLOAD: Slice = beginCell().endCell().asSlice();//emptyCell().asSlice();//emptySlice();

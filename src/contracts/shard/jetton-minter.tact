@@ -8,7 +8,7 @@ import "../utils";
 import "./shard-utils";
 import "./send";
 
-// TODO: multisig for upgrades, lottery for treasury, jobcoins as separate contract
+// TODO: multisig for upgrades, lottery for treasury, jobCoins as separate contract
 struct JettonMinterState {
     totalSupply: Int as coins;
     //treasurySurplus: Int as coins;
@@ -28,8 +28,8 @@ struct JettonMinterState {
 contract JettonMinterSharded {
     totalSupply: Int as coins;
     population: Int as uint32 = 0;
-    treasurySurplus: Int as coins = 0;
-    treasuryDeficits: Int as coins = 0;
+    // treasurySurplus: Int as coins = 0;
+    // treasuryDeficits: Int as coins = 0;
     owner: Address;
     jettonContent: Cell;
     jettonWalletCode: Cell;
@@ -131,7 +131,7 @@ contract JettonMinterSharded {
             2 * getComputeFee(gasForTransfer, false),
         );
 
-        self.totalSupply += msg.mintMessage.amount;// + ton("1000"); // invitation by minter
+        self.totalSupply += msg.mintMessage.amount; // + ton("1000"); // invitation by minter
 
         // basechain destination is calculated inside deploy function
         DeployParameters {
@@ -188,7 +188,7 @@ contract JettonMinterSharded {
             bounce: false,
             value: 0,
             body: UpgradeCode {
-                sender: myAddress(),//self.owner,
+                sender: myAddress(), //self.owner,
                 code: self.jettonWalletCode,
             }.toCell(),
         }.send();
@@ -220,7 +220,7 @@ contract JettonMinterSharded {
         if (msgValue > 0) {
             MessageParameters {
                 to: msg.deployer,
-                value: msgValue, // NOTE: VALUE + REMBALANCE?
+                value: msgValue, // NOTE: VALUE + remaining BALANCE?
                 mode: SendRemainingBalance | SendIgnoreErrors,
                 bounce: false,
                 body: JettonExcesses { queryId: 0 }.toCell(),

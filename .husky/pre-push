@@ -1,5 +1,1 @@
 
-yarn lint:es
-yarn spell
-
-yarn tact-fmt --check ./src

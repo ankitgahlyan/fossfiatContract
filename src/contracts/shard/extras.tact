@@ -386,16 +386,13 @@ asm fun cashbackBalance(to: Address) {
 //         self.array.deleteAll();
 //     }
 //}
-
-// self.forward();// low level for below funs
+// self.forward();// low level for below functions
 // self.reply();// bounce
 // self.notify();// no bounce
 //cashback(sender());// only alone works in receiver
-
 // let publicKey = getPublicKey(msg.privateKey);
 //         require(checkDataSignature(msg.data, msg.signature, publicKey), "Invalid signature!");
 // Don’t throw 0 or 1 directly.
-
 /*
 - Consider using the commit-and-disclose scheme:
 
@@ -404,7 +401,7 @@ Once all hashes are received, participants disclose their original numbers.
 Combine the disclosed numbers (e.g., summing them) to produce a secure random value.
 
 to: sender();// front run possible?
-queryid: for replay
+queryId: for replay
 to: for front run protection
 
 let body = inMsg();
@@ -417,7 +414,7 @@ emptyBasechainAddress()
 newBasechainAddress()
 contractBasechainAddress()
 
-// gas optimisation tips
+// gas optimization tips
 
 Prefer contract parameters to init() and contract fields
 Do not deploy contracts with Deployable trait
@@ -462,7 +459,7 @@ Pay attention to safety option set of tact.config.json
 FUTURE ROADMAP============================================================================
 virtual addresses, one time use and throw address generation
 account age , older can deactivate
-minter stores coordinates received via notifs
+minter stores coordinates received via notifications
 
 
 */

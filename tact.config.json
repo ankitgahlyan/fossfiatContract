@@ -2,57 +2,6 @@
     "$schema": "http://raw.githubusercontent.com/tact-lang/tact/main/src/config/configSchema.json",
     "projects": [
         {
-            "name": "Jetton",
-            "path": "./src/contracts/base/jetton-minter.tact",
-            "output": "./src/output",
-            "mode": "full",
-            "options": {
-                "external": false,
-                "debug": false,
-                "ipfsAbiGetter": false,
-                "interfacesGetter": false,
-                "experimental": {
-                    "inline": true
-                }
-            }
-        },
-        {
-            "name": "Governance",
-            "path": "./src/contracts/governance/jetton-minter.tact",
-            "output": "./src/output",
-            "mode": "full",
-            "options": {
-                "external": false,
-                "debug": false,
-                "ipfsAbiGetter": false,
-                "interfacesGetter": false,
-                "experimental": {
-                    "inline": true
-                },
-                "optimizations": {
-                    "alwaysSaveContractData": false
-                }
-            }
-        },
-        {
-            "name": "FeatureRich",
-            "path": "./src/contracts/feature-rich/jetton-minter.tact",
-            "output": "./src/output",
-            "mode": "full",
-            "options": {
-                "external": false,
-                "debug": false,
-                "ipfsAbiGetter": false,
-                "interfacesGetter": false,
-                "experimental": {
-                    "inline": true
-                },
-                "optimizations": {
-                    "alwaysSaveContractData": false
-                }
-            }
-        },
-        {
             "name": "Shard",
             "path": "./src/contracts/shard/jetton-minter.tact",
             "output": "./src/output",
