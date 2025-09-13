@@ -5,13 +5,13 @@
 
 import {Sha256} from "@aws-crypto/sha256-js"
 import {Dictionary, beginCell, Cell, Address} from "@ton/core"
-// import {JettonMinter} from "../output/Jetton_JettonMinter"
 import {TonClient} from "@ton/ton"
 import chalk from "chalk"
+// import {JettonMinter} from "../output/Jetton_JettonMinter"
 // import {GovernanceJettonMinter} from "../output/Governance_GovernanceJettonMinter"
 // import {JettonMinterFeatureRich} from "../output/FeatureRich_JettonMinterFeatureRich"
 import {JettonMinterSharded} from "../output/Shard_JettonMinterSharded"
-import { JettonWalletSharded } from "../output/Shard_JettonWalletSharded"
+import {JettonWalletSharded} from "../output/Shard_JettonWalletSharded"
 
 const ONCHAIN_CONTENT_PREFIX = 0x00
 const SNAKE_PREFIX = 0x00
@@ -132,7 +132,8 @@ export async function validateJettonParams(
 
 export async function buildJettonMinterFromEnv(
     deployerAddress: Address,
-    type: "base" | "governance" | "feature-rich" | "shard",
+    type: "shard",
+    // type: "base" | "governance" | "feature-rich" | "shard",
 ) {
     const jettonParams = {
         name: process.env.JETTON_NAME ?? "TactJetton",
@@ -157,9 +158,6 @@ export async function buildJettonMinterFromEnv(
             return await JettonMinterSharded.fromInit(0n, deployerAddress, content, true)
     }
 }
-export async function buildJettonWalletFromEnv(
-    deployerAddress: Address,
-) {return await JettonWalletSharded.fromInit(deployerAddress, deployerAddress, 0n)}
-
-   
-    
+export async function buildJettonWalletFromEnv(deployerAddress: Address) {
+    return await JettonWalletSharded.fromInit(deployerAddress, deployerAddress, 0n)
+}

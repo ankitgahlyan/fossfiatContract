@@ -13,17 +13,16 @@ import {uploadDeployResultToGist} from "../utils/gist"
 import {getNetworkFromEnv} from "../utils/utils"
 import {JettonMinterSharded} from "../output/Shard_JettonMinterSharded"
 import {JettonWalletSharded} from "../output/Shard_JettonWalletSharded"
-import {JettonMinter} from "../output/Jetton_JettonMinter"
-import {GovernanceJettonMinter} from "../output/Governance_GovernanceJettonMinter"
-import {JettonMinterFeatureRich} from "../output/FeatureRich_JettonMinterFeatureRich"
+// import {JettonMinter} from "../output/Jetton_JettonMinter"
+// import {GovernanceJettonMinter} from "../output/Governance_GovernanceJettonMinter"
+// import {JettonMinterFeatureRich} from "../output/FeatureRich_JettonMinterFeatureRich"
 
 describe("Contract Deployment Verification", () => {
     let client: TonClient
-    let jettonMinter:
-        | JettonMinterSharded
-        | JettonMinter
-        | GovernanceJettonMinter
-        | JettonMinterFeatureRich
+    let jettonMinter: JettonMinterSharded
+    // | JettonMinter
+    // | GovernanceJettonMinter
+    // | JettonMinterFeatureRich
     let deployerWalletAddress: Address
     let jettonParams: JettonParams
 
@@ -70,7 +69,8 @@ describe("Contract Deployment Verification", () => {
                 await JettonWalletSharded.init(
                     deployerWalletAddress,
                     jettonMinter.address,
-                    toNano(Number(1)),
+                    // toNano(Number(0)),
+                    0n,
                 )
             ).code,
         }

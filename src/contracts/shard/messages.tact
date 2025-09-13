@@ -2,7 +2,7 @@
 //  Copyright © 2025 TON Studio
 
 struct Insurance {
-    emi: Int as uint12;
+    emi: Int as coins;
     startStop: Int as uint42;// TODO: enough for time
 }
 // Optimized action messages with op codes
@@ -93,7 +93,7 @@ message(1) InviteInternal {
 
 message(2) Follow {
     target: Address;
-    amount: Int as uint16;
+    amount: Int as coins;
 }
 
 message(3) FollowInternal {
@@ -189,14 +189,14 @@ message(0x14) AdminAction {
 // }
 
 struct FriendsAndFollowings {
-    friends: map<Address, Int as uint12>;
-    followings: map<Address, Int as uint12>;
+    friends: Cell?;//map<Address, Int as uint12>;
+    followings: Cell?;//map<Address, Int as uint12>;
     //TODO: remove maybe
-    followers: map<Address, Int as uint12>;
-    invited: map<Address, Int as uint12>;
-    pendingRequests: map<Address, Int as uint12>;
-    debts: map<Address, Int as uint20>;
-    reports: map<Address, Bool>;
+    followers: Cell?;//map<Address, Int as uint12>;
+    invited: Cell?;//map<Address, Int as uint12>;
+    pendingRequests: Cell?;//map<Address, Int as uint12>;
+    debts: Cell?;//map<Address, Int as uint20>;
+    reports: Cell?;//map<Address, Bool>;
 }
 
 struct OtherStateConsts {
@@ -209,19 +209,19 @@ struct OtherStateConsts {
     mbrpAmount: Int as coins;
     closureWait: Int as uint32;
     frozen: Bool;
-    lastMsgTo: Address?;
+    lastMsgTo: Address;
 }
 
 struct InvitorNominee {
     invitor: Address?;
-    nominee: Address?;
+    nominee: Address;
 
     //minterOwner: Address;
 }
 
 //minterOwner: Address;
 struct JettonData {
-    totalSupply: Int;
+    totalSupply: Int as coins;
     mintable: Bool;
     owner: Address;
     content: Cell;
@@ -229,7 +229,7 @@ struct JettonData {
 }
 
 struct JettonWalletData {
-    balance: Int; //TODO: map of different jettons
+    balance: Int as coins; //TODO: map of different jettons
     owner: Address;
     minter: Address; // TODO: array of different minters(maybe wallet gen isInTrouble coz of this)
     code: Cell;
@@ -354,7 +354,7 @@ message(0x42) VoteProposal {
     proposer: Address;
     turnover: Int as coins;
 }
-message(0x41) CitizenAdded {
+message(0x43) CitizenAdded {
     sender: Address;
     newAccount: Address;
 }

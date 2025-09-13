@@ -38,7 +38,7 @@ contract JettonMinterSharded {
     mintable: Bool;
     //tosHash: String = "";
     //mbrpAmount: Int as coins,//TODO: change from coins, add fun to change, send message to all contracts on change
-    publicWorks: map<Address, Int as uint10>;// TODO: coupons/nft cashed out at eligible accounts
+    publicWorks: map<Address, Int as uint10>; // TODO: coupons/nft cashed out at eligible accounts
     votes: map<Address, Int as uint20>;
     //crowdFund: map<Int as uint10, Int as uint10>;
 
@@ -90,7 +90,7 @@ contract JettonMinterSharded {
         let wallet = getJettonBasechainWalletByOwner(msg.sender);
 
         // Workchain 0 is basechain
-        throwUnless(724, sender.workchain == Basechain && sender.address == wallet.hash!!);// unauthorized burn/sender
+        throwUnless(724, sender.workchain == Basechain && sender.address == wallet.hash!!); // unauthorized burn/sender
 
         if (msg.sender == emptyAddress()) { // custom use for mint notify
             self.totalSupply += msg.amount;
@@ -113,29 +113,29 @@ contract JettonMinterSharded {
     // however minting is possible only to basechain addresses
     // it is asserted inside the deploy function
     receive(msg: Mint) {
-        throwUnless(700, sender() == self.owner);// incorrect sender
-        throwUnless(730, self.mintable);// mint is closed
+        throwUnless(700, sender() == self.owner); // incorrect sender
+        throwUnless(730, self.mintable); // mint is closed
 
         checkEitherForwardPayload(msg.mintMessage.forwardPayload);
 
         let ctx = context();
         // we don't add compute fees for mint itself and reserve here
         // it's okay since it’s sent only by the admin and excesses will return back
-        throwUnless(731,
+        throwUnless(
+            731,
             ctx.value >
             minTonsForStorage +
             msg.mintMessage.forwardTonAmount +
             ctx.readForwardFee() +
             getForwardFee(walletStateInitCells, walletStateInitBits, false) +
-            2 * getComputeFee(gasForTransfer, false)
+            2 * getComputeFee(gasForTransfer, false),
         );
 
-        self.totalSupply += msg.mintMessage.amount + ton("1000");// invitation by minter
+        self.totalSupply += msg.mintMessage.amount;// + ton("1000"); // invitation by minter
 
         // basechain destination is calculated inside deploy function
         DeployParameters {
             value: 0, // ignore msg.tonAmount and use SendMode 64 instead
-            bounce: true,
             mode: SendRemainingValue | SendBounceIfActionFail,
             body: msg.mintMessage.toCell(),
             init: initOf JettonWalletSharded(msg.receiver, myAddress(), 0),
@@ -155,7 +155,7 @@ contract JettonMinterSharded {
     }
 
     receive(msg: JettonUpdateContent) {
-        throwUnless(700, sender() == self.owner);// incorrect sender
+        throwUnless(700, sender() == self.owner); // incorrect sender
         if (msg.content != null) {
             self.jettonContent = msg.content!!;
             self.version = + 1;
@@ -163,26 +163,33 @@ contract JettonMinterSharded {
         if (msg.jettonWalletCode != null) {
             self.jettonWalletCode = msg.jettonWalletCode!!;
             self.walletVersion += 1;
+
+            // auto upgrade owner jetton wallet code TODO:
+            //self.sendUpgrade(getJettonBasechainWalletByOwner(self.owner));
         }
 
         cashback(sender());
     }
 
     receive(msg: RequestUpgradeCode) {
-        let code: Cell? = null;
+        //let code: Cell? = null;
         // let code = emptyCell();// it's different!
 
         if (msg.version < self.walletVersion) {
-            code = self.jettonWalletCode;
+            //code = self.jettonWalletCode;
+            self.sendUpgrade(sender());
         }
-        MessageParameters {// bounce for collecting fees back
-            to: sender(),
+    }
+
+    inline fun sendUpgrade(to: Address) {
+        MessageParameters { // bounce for collecting fees back
+            to,
             mode: SendRemainingValue | SendIgnoreErrors,
             bounce: false,
             value: 0,
             body: UpgradeCode {
-                sender: self.owner, // FIXME: myAddress()
-                code,
+                sender: myAddress(),//self.owner,
+                code: self.jettonWalletCode,
             }.toCell(),
         }.send();
     }
@@ -204,13 +211,33 @@ contract JettonMinterSharded {
         self.population += 1;
         // we allow bounce here and don't handle it, if claim fails we just accept the TONs back
         // FIXME: emit event or tell connections in wallet's init
-        cashback(msg.deployer);// empty receiver significance?
+        //cashback(msg.deployer);// empty receiver significance?
+
+        let msgValue: Int = context().value;
+        let tonBalanceBeforeMsg = myBalance() - msgValue;
+        nativeReserve(max(tonBalanceBeforeMsg, minTonsForStorage), ReserveAtMost);
+        // 0xd53276db -- Cashback to the original Sender
+        if (msgValue > 0) {
+            MessageParameters {
+                to: msg.deployer,
+                value: msgValue, // NOTE: VALUE + REMBALANCE?
+                mode: SendRemainingBalance | SendIgnoreErrors,
+                bounce: false,
+                body: JettonExcesses { queryId: 0 }.toCell(),
+            }.send();
+        }
     }
+
+    receive(msg: Slice) {} // fallback to accept value
+
+    receive() {} // empty receiver to accept value
+
     receive(msg: ApplyGrant) {
         // FIXME: checks
         self.publicWorks.set(msg.sender, msg.amount);
         cashback(msg.sender);
     }
+
     receive(msg: VoteProposal) {
         // FIXME: checks
         self.votes.set(msg.proposer, msg.turnover);
@@ -224,12 +251,10 @@ contract JettonMinterSharded {
     get fun state(): JettonMinterSharded {
         return self; // you do not have to list all fields of a contract for this
     }
-    
-    get fun get_jetton_data(): JettonMinterState {
+
+    get fun get_jetton_data(): JettonMinterState { // don't touch it or explorers won't recognise as minter
         return JettonMinterState {
             totalSupply: self.totalSupply,
-            //treasurySurplus: self.treasurySurplus,
-            //treasuryDeficits: self.treasuryDeficits,
             mintable: self.mintable,
             adminAddress: self.owner,
             jettonContent: self.jettonContent,

@@ -1,7 +1,15 @@
 //  SPDX-License-Identifier: MIT
 //  Copyright © 2025 TON Studio
 
-import {beginCell, toNano, TonClient, WalletContractV4, internal, fromNano} from "@ton/ton"
+import {
+    beginCell,
+    toNano,
+    TonClient,
+    WalletContractV4,
+    SendMode,
+    internal,
+    fromNano,
+} from "@ton/ton"
 import {getHttpEndpoint} from "@orbs-network/ton-access"
 import {mnemonicToPrivateKey} from "@ton/crypto"
 import {buildJettonMinterFromEnv} from "../utils/jetton-helpers"
@@ -12,23 +20,6 @@ import {printSeparator} from "../utils/print"
 import "dotenv/config"
 import {getJettonHttpLink, getNetworkFromEnv} from "../utils/utils"
 
-/*
-    This is deployment script for basic jetton, compatible with TEP-74 and TEP-89
-
-    (Remember to install dependencies by running "yarn install" in the terminal)
-    Here are the instructions to deploy the contract:
-    1. Create new walletV4r2 or use existing one.
-    2. Enter your mnemonics in .env file. (.env.example is provided)
-    3. In .env file specify the network you want to deploy the contract.
-    (testnet is chosen by default, if you are not familiar with it, read https://tonkeeper.helpscoutdocs.com/article/100-how-switch-to-the-testnet)
-
-    4. In .env file specify the parameters of the Jetton. (Ticker, description, image, etc.)
-    5. In .env file specify the total supply of the Jetton. It will be automatically converted to nano - jettons.
-    Note: All supply will be automatically minted to your wallet.
-
-    6. Build the contracts
-    7. Run this script
- */
 const main = async () => {
     const mnemonics = process.env.MNEMONICS
     if (mnemonics === undefined) {
@@ -58,7 +49,7 @@ const main = async () => {
 
     // const jettonMinter = await buildJettonMinterFromEnv(deployerWalletContract.address, "base")
     const jettonMinter = await buildJettonMinterFromEnv(deployerWalletContract.address, "shard")
-    const deployAmount = toNano("2")
+    const deployAmount = toNano("0.5")
 
     const supply = toNano(Number(process.env.JETTON_SUPPLY ?? 1000000000)) // 1_000_000_000 jettons
     // const supply = toNano(parseFloat("0.1")) // 1_000_000_000 jettons
@@ -104,21 +95,26 @@ const main = async () => {
     console.log("Minting:: ", fromNano(supply))
     printSeparator()
 
+    // deploy master + wallet by sending mint msg
     await deployerWalletContract.sendTransfer({
         seqno,
         secretKey,
+        sendMode: SendMode.PAY_GAS_SEPARATELY + SendMode.IGNORE_ERRORS,
         messages: [
             internal({
                 to: jettonMinter!!.address,
                 value: deployAmount,
+                body: packed_msg,
                 init: {
                     code: jettonMinter!!.init?.code,
                     data: jettonMinter!!.init?.data,
                 },
-                body: packed_msg,
+                // to: 'EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N',
+                //   body: 'Example transfer body',
             }),
         ],
     })
+
     console.log("====== Deployment message sent to =======\n", jettonMinter!!.address)
     const link = getJettonHttpLink(network, jettonMinter!!.address, "tonviewer")
     console.log(`You can soon check your deployed contract at ${link}`)

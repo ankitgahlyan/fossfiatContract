@@ -68,7 +68,7 @@ const main = async () => {
     const jettonMinter = client.open(JettonMinterSharded.fromAddress(minterAddress))
     const jettonMinterNew = await buildJettonMinterFromEnv(deployerWalletContract.address, "shard")
     // const wallet = client.open(JettonWalletSharded.fromAddress(walletAddress))
-    const deployAmount = toNano("2")
+    const deployAmount = toNano("0.2")
 
     // const supply = toNano(Number(process.env.JETTON_SUPPLY ?? 1000000000)) // 1_000_000_000 jettons
     // const supply = toNano(parseFloat("0.1")) // 1_000_000_000 jettons
