@@ -27,7 +27,7 @@ struct JettonMinterState {
 
 contract JettonMinterSharded {
     totalSupply: Int as coins;
-    population: Int as uint32 = 0;
+    totalAccounts: Int as uint32 = 0;
     // treasurySurplus: Int as coins = 0;
     // treasuryDeficits: Int as coins = 0;
     owner: Address;
@@ -122,7 +122,7 @@ contract JettonMinterSharded {
         // we don't add compute fees for mint itself and reserve here
         // it's okay since it’s sent only by the admin and excesses will return back
         throwUnless(
-            731,
+            703,
             ctx.value >
             minTonsForStorage +
             msg.mintMessage.forwardTonAmount +
@@ -132,6 +132,8 @@ contract JettonMinterSharded {
         );
 
         self.totalSupply += msg.mintMessage.amount; // + ton("1000"); // invitation by minter
+        self.totalAccounts += 1; // only mints to owner just once
+        //self.mintable = false;
 
         // basechain destination is calculated inside deploy function
         DeployParameters {
@@ -208,24 +210,25 @@ contract JettonMinterSharded {
 
     receive(msg: AccountGenerated) {
         // FIXME: checks
-        self.population += 1;
+        self.totalAccounts += 1;
         // we allow bounce here and don't handle it, if claim fails we just accept the TONs back
         // FIXME: emit event or tell connections in wallet's init
-        //cashback(msg.deployer);// empty receiver significance?
+        cashback(msg.deployer); // empty receiver significance?
+        // TODO: external out msg containing location and invitor0 of msg.newAccount
 
-        let msgValue: Int = context().value;
-        let tonBalanceBeforeMsg = myBalance() - msgValue;
-        nativeReserve(max(tonBalanceBeforeMsg, minTonsForStorage), ReserveAtMost);
-        // 0xd53276db -- Cashback to the original Sender
-        if (msgValue > 0) {
-            MessageParameters {
-                to: msg.deployer,
-                value: msgValue, // NOTE: VALUE + remaining BALANCE?
-                mode: SendRemainingBalance | SendIgnoreErrors,
-                bounce: false,
-                body: JettonExcesses { queryId: 0 }.toCell(),
-            }.send();
-        }
+        // let msgValue: Int = context().value;
+        // let tonBalanceBeforeMsg = myBalance() - msgValue;
+        // nativeReserve(max(tonBalanceBeforeMsg, minTonsForStorage), ReserveAtMost);
+        // // 0xd53276db -- Cashback to the original Sender
+        // if (msgValue > 0) {
+        //     MessageParameters {
+        //         to: msg.deployer,
+        //         value: msgValue, // NOTE: VALUE + remaining BALANCE?
+        //         mode: SendRemainingBalance | SendIgnoreErrors,
+        //         bounce: false,
+        //         body: JettonExcesses { queryId: 0 }.toCell(),
+        //     }.send();
+        // }
     }
 
     receive(msg: Slice) {} // fallback to accept value

@@ -11,8 +11,9 @@ const Basechain: Int = 0;
 const walletStateInitCells: Int = 30;
 const walletStateInitBits: Int = 20000;
 
-const mbrpAmount: Int = ton("1000"); // NOTE: store as consts to upgrade with code now minter updates, any const update also updates version but should not
-const closureWait: Int = 86400; // 1 day
+const MBRP_AMOUNT: Int = ton("1000"); // NOTE: store as consts to upgrade with code now minter updates, any const update also updates version but should not
+const CLOSURE_WAIT: Int = 86400; // 1 day
+
 // Declare a compile-time constant upper-bound for our map
 //const maxConnections: Int = 200;//contract can send only approx 250 msg once
 

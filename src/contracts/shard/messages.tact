@@ -207,12 +207,12 @@ struct OtherStateConsts {
     terminated: Bool;
     mbrpAmount: Int as coins;
     closureWait: Int as uint32;
-    frozen: Bool;
+    active: Bool;
     lastMsgTo: Address;
 }
 
 struct InvitorNominee {
-    invitor: Address?;
+    invitor: Address;
     nominee: Address;
 
     //minterOwner: Address;
